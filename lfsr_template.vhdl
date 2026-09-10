@@ -58,7 +58,7 @@ architecture rtl_lfsr of lfsr is
             if reset = '1' then
                 s_lfsr <= (others => '0');
                 s_clk  <= '1';
-            elsif (s_lfsr = std_logic_vector({!count}) then
+            elsif s_lfsr = {!count} then
                 s_lfsr <= (OTHERS => '0');
                 s_clk  <= '1';
             else

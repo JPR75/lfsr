@@ -30,6 +30,7 @@ import (
 	"os"
 	"strconv"
 	"time"
+	"strings"
 )
 
 var lfsrTaps = [][]uint{
@@ -48,7 +49,8 @@ func main() {
 	lfsrFeedback := uint64(0)
 	iteration := uint64(0)
 	maxIteration := uint64(0xFFFFFFFFFFFFFFFE)
-
+	var polynomial string
+	
 	// Check command-line argument
 	if len(os.Args) != 2 {
 		fmt.Printf("Usage: %s <frequency> in Hz\n", os.Args[0])
@@ -100,8 +102,47 @@ func main() {
 
 	// Results
 	if len(lfsrTaps[n]) == 2 {
-		fmt.Printf("\n=> P = X^%d + X^%d + 1 ; LFSR target count = 0x%X (%d)\n", lfsrTaps[n][0], lfsrTaps[n][1], lfsr, lfsr)
+		fmt.Printf("\n=> P = X^%d + X^%d ; LFSR target count = 0x%X (%d)\n", lfsrTaps[n][0], lfsrTaps[n][1], lfsr, lfsr)
+		polynomial = fmt.Sprintf("s_lfsr(%d) xnor s_lfsr(%d)", lfsrTaps[n][0] - 1, lfsrTaps[n][1] - 1)
 	} else {
-		fmt.Printf("\n=> P = X^%d + X^%d + X^%d + X^%d + 1 ; LFSR target count = 0x%X (%d)\n", lfsrTaps[n][0], lfsrTaps[n][1], lfsrTaps[n][2], lfsrTaps[n][3], lfsr, lfsr)
+		fmt.Printf("\n=> P = X^%d + X^%d + X^%d + X^%d ; LFSR target count = 0x%X (%d)\n", lfsrTaps[n][0], lfsrTaps[n][1], lfsrTaps[n][2], lfsrTaps[n][3], lfsr, lfsr)
+		polynomial = fmt.Sprintf("s_lfsr(%d) xnor s_lfsr(%d) xnor s_lfsr(%d) xnor s_lfsr(%d)", lfsrTaps[n][0] - 1, lfsrTaps[n][1] - 1, lfsrTaps[n][2] - 1, lfsrTaps[n][3] - 1)
 	}
+
+	// Write lfsr.vhdl file from the template file lfsr_template.vhdl
+	err = writeLFSRFile(strconv.Itoa(n - 1), fmt.Sprintf("X\"%X\"", lfsr), polynomial)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "\n%v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("\nCreated lfsr.vhdl file\n")
+
 }
+
+
+// --------------------------------------------------------------------------------
+// Read and replace the VHDL template
+// --------------------------------------------------------------------------------
+func writeLFSRFile(size, count, polynomial string) error {
+	// Read the input file
+	content, err := os.ReadFile("lfsr_template.vhdl")
+	if err != nil {
+		return fmt.Errorf("Error reading lfsr_template.vhdl: %w", err)
+	}
+
+	// Perform replacements
+	result := string(content)
+	result = strings.ReplaceAll(result, "{!size}", size)
+	result = strings.ReplaceAll(result, "{!count}", count)
+	result = strings.ReplaceAll(result, "{!polynomial}", polynomial)
+
+	// Write the result to the output file
+	err = os.WriteFile("lfsr.vhdl", []byte(result), 0644)
+	if err != nil {
+		return fmt.Errorf("Error writing lfsr.vhdl: %w", err)
+	}
+
+	return nil
+}
+
