@@ -63,7 +63,7 @@ architecture rtl_lfsr of lfsr is
                 s_clk  <= '1';
             else
                 s_feedback := {!polynomial};
-                s_lfsr <= s_lfsr({!size} downto 0) & s_feedback;
+                s_lfsr <= s_lfsr({!size} - 1 downto 0) & s_feedback;
                 s_clk  <= '0';
             end if;
         end if;
