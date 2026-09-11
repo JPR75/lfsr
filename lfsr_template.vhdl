@@ -6,9 +6,9 @@
 --               {!count} will be rplaced by size of the taget count
 --               {!polynomial} will be replaced by the polynomial
 --
---               example: division by 100000 => P = X^17 + X^14 + 1 ; LFSR target count = 0x546B
+--               example: division by 100000 => P = X^17 + X^14 ; LFSR target count = 0x546B
 --                                           => {!size} = 16
---                                           => {!count} = X"546B"
+--                                           => {!count} = "00101010001101011"
 --                                           => {!polynomial"} = s_lfsr(16) xnor s_lfsr(13)
 --
 -- Note: Don't forget to replace this header with your own!
@@ -39,9 +39,9 @@ library work;
 
 entity lfsr is
     port (
-        clkin  : in  std_logic;
-        reset  : in  std_logic;
-        clkout : out std_logic
+        clk_in    : in  std_logic;
+        reset     : in  std_logic;
+        pulse_out : out std_logic
     );
 end entity lfsr;
 
@@ -51,24 +51,24 @@ architecture rtl_lfsr of lfsr is
 
     begin
 
-    lfsr: process(clkin)
+    lfsr: process(clk_in)
         variable s_feedback : std_logic;
     begin
-        if rising_edge(clk) then
+        if rising_edge(clk_in) then
             if reset = '1' then
                 s_lfsr <= (others => '0');
                 s_clk  <= '1';
-            elsif s_lfsr = {!count} then
+            elsif s_lfsr = "{!count}" then
                 s_lfsr <= (OTHERS => '0');
                 s_clk  <= '1';
             else
                 s_feedback := {!polynomial};
-                s_lfsr <= s_lfsr({!size} - 1 downto 0) & s_feedback;
+                s_lfsr <= s_lfsr(({!size} - 1) downto 0) & s_feedback;
                 s_clk  <= '0';
             end if;
         end if;
     end process;
 
-  clkout  <= s_clk;
+  pulse_out  <= s_clk;
 
 end architecture rtl_lfsr;
