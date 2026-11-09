@@ -43,7 +43,7 @@ func main() {
 	
 	// Check command-line argument
 	if len(os.Args) != 3 {
-		fmt.Printf("Usage: %s <polynomial number> <target>\n", os.Args[0])
+		fmt.Printf("Usage: %s <polynomial biggest exponent> <target>\n", os.Args[0])
 		os.Exit(1)
 	}
 

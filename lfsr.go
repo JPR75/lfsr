@@ -53,7 +53,7 @@ func main() {
 	
 	// Check command-line argument
 	if len(os.Args) != 2 {
-		fmt.Printf("Usage: %s <frequency> in Hz\n", os.Args[0])
+		fmt.Printf("Usage: %s <frequency division ratio>\n", os.Args[0])
 		os.Exit(1)
 	}
 
